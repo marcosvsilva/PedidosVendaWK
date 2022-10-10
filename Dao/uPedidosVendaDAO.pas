@@ -18,7 +18,8 @@ type
       filtro, ordem: TStringList): TList<TPedidosVenda>; overload; override;
     function BuscarDados(nRegistros: Integer):
       TList<TPedidosVenda>; overload;
-    procedure InsertDados(dados: TList<TPedidosVenda>); override;
+    function InsertDados(dados: TList<TPedidosVenda>):
+      TList<Integer>; override;
   end;
 
 implementation
@@ -53,18 +54,19 @@ begin
       lVendedorDAO.Free;
     end;
   end;
-
 end;
 
-procedure TPedidosVendaDAO.InsertDados(dados: TList<TPedidosVenda>);
+function TPedidosVendaDAO.InsertDados(dados: TList<TPedidosVenda>):
+  TList<Integer>;
 var
   I: Integer;
   sqlInsert: TStringList;
+  listResult: TList<Integer>;
 begin
-  inherited;
   if dados.Count > 0 then
   begin
     sqlInsert := TStringList.Create;
+    listResult := TList<Integer>.Create;
     try
       for I := 0 to dados.Count -1 do
       begin
@@ -74,21 +76,27 @@ begin
         sqlInsert.Add('STATUS, VALOR_DESCONTO, VALOR_TOTAL)');
         sqlInsert.Add('VALUES');
         sqlInsert.Add('(');
-        sqlInsert.Add(IntToStr(dados[i].Cliente.CodigoCliente));
-        sqlInsert.Add(IntToStr(dados[i].Vendedor.CodigoVendedor));
-        sqlInsert.Add(DateTimeToStr(dados[i].DataEmissao));
+        sqlInsert.Add(IntToStr(dados[i].Cliente.CodigoCliente) + ',');
+        sqlInsert.Add(IntToStr(dados[i].Vendedor.CodigoVendedor) + ',');
+
+        sqlInsert.Add('STR_TO_DATE(' +
+          QuotedStr(DateTimeToStr(dados[i].DataEmissao)) + ', ' +
+          QuotedStr('%d/%m/%Y %H:%i:%s') + '),');
+
         if dados[i].Status = tspAberto then
-          sqlInsert.Add('A')
+          sqlInsert.Add(QuotedStr('A') + ',')
         else if dados[i].Status = tspFaturado then
-          sqlInsert.Add('F')
+          sqlInsert.Add(QuotedStr('F') + ',')
         else if dados[i].Status = tspCancelado then
-          sqlInsert.Add('F');
-        sqlInsert.Add(FloatToStr(dados[i].ValorDesconto));
+          sqlInsert.Add(QuotedStr('C') + ',');
+        sqlInsert.Add(FloatToStr(dados[i].ValorDesconto) + ',');
         sqlInsert.Add(FloatToStr(dados[i].ValorTotal));
         sqlInsert.Add(')');
 
-        FConexao.ExecuteCommand(sqlInsert);
+        listResult.Add(FConexao.InsertData(sqlInsert));
       end;
+
+      Result := listResult;
     finally
       sqlInsert.Free;
     end;
@@ -108,7 +116,7 @@ begin
     sql.Add('SELECT *');
     sql.Add('FROM PEDIDOS');
     sql.Add('WHERE NUMERO_PEDIDO = ' + IntToStr(codigo));
-    sql.Add('LIMIT = 1');
+    sql.Add('LIMIT 1');
 
     qryBusca := FConexao.ExecuteQuery(sql);
     try

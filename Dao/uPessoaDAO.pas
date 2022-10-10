@@ -17,7 +17,7 @@ type
   end;
 
   TClienteDAO = class(TPersistencia<TCliente>)
-  public 
+  public
     function BuscaPorCodigo(codigo: Integer): TCliente; override;
     function BuscarDados(nRegistros: Integer;
       filtro, ordem: TStringList): TList<TCliente>; overload; override;
@@ -55,7 +55,7 @@ begin
     sql.Add('LEFT JOIN ESTADOS EST');
     sql.Add('ON EST.CODIGO_ESTADO = CID.CODIGO_ESTADO');
     sql.Add('WHERE PES.CODIGO_PESSOA = ' + IntToStr(codigo));
-    sql.Add('LIMIT = 1');
+    sql.Add('LIMIT 1');
 
     qryBusca := FConexao.ExecuteQuery(sql);
     try
@@ -152,8 +152,8 @@ begin
     sql.Add('ON PES.CODIGO_CIDADE = CID.CODIGO_CIDADE');
     sql.Add('LEFT JOIN ESTADOS EST');
     sql.Add('ON EST.CODIGO_ESTADO = CID.CODIGO_ESTADO');
-    sql.Add('WHERE CLI.CODIGO_PESSOA = ' + IntToStr(codigo));
-    sql.Add('LIMIT = 1');
+    sql.Add('WHERE CLI.CODIGO_CLIENTE = ' + IntToStr(codigo));
+    sql.Add('LIMIT 1');
 
     qryBusca := FConexao.ExecuteQuery(sql);
     try
@@ -253,7 +253,7 @@ begin
     sql.Add('LEFT JOIN ESTADOS EST');
     sql.Add('ON EST.CODIGO_ESTADO = CID.CODIGO_ESTADO');
     sql.Add('WHERE VEN.CODIGO_VENDEDOR = ' + IntToStr(codigo));
-    sql.Add('LIMIT = 1');
+    sql.Add('LIMIT 1');
 
     qryBusca := FConexao.ExecuteQuery(sql);
     try

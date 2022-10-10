@@ -34,7 +34,7 @@ begin
     sql.Add('SELECT *');
     sql.Add('FROM ESTADOS');
     sql.Add('WHERE CODIGO_ESTADO = ' + IntToStr(codigo));
-    sql.Add('LIMIT = 1');
+    sql.Add('LIMIT 1');
 
     qryBusca := FConexao.ExecuteQuery(sql);
     try
@@ -64,7 +64,7 @@ begin
     sql.Add('SELECT *');
     sql.Add('FROM ESTADOS');
     sql.Add('WHERE CODIGO_ESTADO = ' + IntToStr(codigo));
-    sql.Add('LIMIT = 1');
+    sql.Add('LIMIT 1');
 
     qryBusca := FConexao.ExecuteQuery(sql);
     try

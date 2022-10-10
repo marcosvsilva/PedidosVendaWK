@@ -14,6 +14,10 @@ type
       filtro, ordem: TStringList): TList<TProduto>; overload; override;
     function BuscarDados(nRegistros: Integer):
       TList<TProduto>; overload;
+    function InsertDados(dados: TList<TProduto>): TList<Integer>;
+      overload; override;
+    function InsertDados(dados: TList<TProdutoPedido>): TList<Integer>;
+      overload;
   end;
 
 implementation
@@ -33,7 +37,7 @@ begin
     sql.Add('SELECT *');
     sql.Add('FROM PRODUTOS');
     sql.Add('WHERE CODIGO_PRODUTO = ' + IntToStr(codigo));
-    sql.Add('LIMIT = 1');
+    sql.Add('LIMIT 1');
 
     qryBusca := FConexao.ExecuteQuery(sql);
     try
@@ -104,6 +108,48 @@ end;
 function TProdutoDAO.BuscarDados(nRegistros: Integer): TList<TProduto>;
 begin
   Result := BuscarDados(nRegistros, nil, nil);
+end;
+
+function TProdutoDAO.InsertDados(dados: TList<TProdutoPedido>): TList<Integer>;
+var
+  sqlInsert: TStringList;
+  I: Integer;
+  listResult: TList<Integer>;
+begin
+  sqlInsert := TStringList.Create;
+  listResult := TList<Integer>.Create;
+  try
+    for I := 0 to dados.Count -1 do
+    begin
+      if dados[i].NumeroPedido > 0 then
+      begin
+        sqlInsert.Clear;
+        sqlInsert.Add('INSERT INTO PRODUTOS_PEDIDOS');
+        sqlInsert.Add('(NUMERO_PEDIDO, CODIGO_PRODUTO, QUANTIDADE,');
+        sqlInsert.Add('VALOR_UNITARIO, VALOR_TOTAL)');
+        sqlInsert.Add('VALUES');
+        sqlInsert.Add('(');
+        sqlInsert.Add(IntToStr(dados[i].NumeroPedido) + ',');
+        sqlInsert.Add(IntToStr(dados[i].Codigo) + ',');
+        sqlInsert.Add(IntToStr(dados[i].Quantidade) + ',');
+        sqlInsert.Add(FloatToStr(dados[i].ValorUnitario) + ',');
+        sqlInsert.Add(FloatToStr(dados[i].ValorTotal));
+        sqlInsert.Add(')');
+
+        listResult.Add(FConexao.InsertData(sqlInsert));
+      end
+      else
+        Exception.Create(
+          'Falha ao inserir produtos! Numero do pedido e invalido!');
+    end;
+  finally
+    sqlInsert.Free;
+  end;
+end;
+
+function TProdutoDAO.InsertDados(dados: TList<TProduto>): TList<Integer>;
+begin
+  //TODO: Implementar InsertDados / TProdutoDAO;
 end;
 
 end.
