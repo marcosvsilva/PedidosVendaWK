@@ -131,11 +131,6 @@
         <DCCReference Include="Model\uCidadeEstado.pas"/>
         <DCCReference Include="Model\uPessoa.pas"/>
         <DCCReference Include="Dao\uPersistencia.pas"/>
-        <DCCReference Include="Dao\uPessoaDAO.pas">
-            <Form>,
-  uProdutoDAO in &apos;Dao\uProdutoDAO.pas&apos;,
-  uFormNovoPedidosVenda in &apos;View\uFormNovoPedidosVenda.pas&apos; {FNovoPedidosVenda</Form>
-        </DCCReference>
         <DCCReference Include="Dao\uProdutoDAO.pas"/>
         <DCCReference Include="Dao\uCidadeEstadoDAO.pas"/>
         <DCCReference Include="Dao\uPedidosVendaDAO.pas"/>
@@ -145,6 +140,7 @@
         <DCCReference Include="View\uFormPedidosVenda.pas">
             <Form>FPedidoVendas</Form>
         </DCCReference>
+        <DCCReference Include="Dao\uPessoaDAO.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
