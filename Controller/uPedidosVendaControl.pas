@@ -4,22 +4,21 @@ interface
 
 uses
   System.Generics.Collections, System.SysUtils,
-  uPedidosVenda, uProduto, uPessoaDAO, uPessoa;
+  uPedidosVenda, uProduto, uPessoa, uPedidosVendaDAO, uPessoaDAO, uProdutoDAO;
 
 type
   TPedidosVendaControl = class
   private
     FCodigoCliente: Integer;
     FCodigoVendedor: Integer;
-    FPedidosVenda: TPedidosVenda;
     FListProdutos: TList<TProdutoPedido>;
-    FClienteDAO: TClienteDAO;
-    FVendedorDAO: TVendedorDAO;
+    
+    FPedidosVendaDAO: TPedidosVendaDAO;
+    FProdutoDAO: TProdutoDAO;
 
     procedure SetCodigoCliente(const Value: Integer);
     procedure SetCodigoVendedor(const Value: Integer);
     procedure SetListProdutos(const Value: TList<TProdutoPedido>);
-    procedure SetPedidosVenda(const Value: TPedidosVenda);
   public
     constructor Create;
     destructor Destroy;
@@ -28,12 +27,10 @@ type
       read FCodigoVendedor write SetCodigoVendedor;
     property CodigoCliente: Integer
       read FCodigoCliente write SetCodigoCliente;
-    property PedidosVenda: TPedidosVenda
-      read FPedidosVenda write SetPedidosVenda;
     property ListProdutos: TList<TProdutoPedido>
       read FListProdutos write SetListProdutos;
 
-    procedure GravarPedido;
+    function GravarPedido(FPedidosVenda: TPedidosVenda): Boolean;
   end;
 
 implementation
@@ -42,26 +39,32 @@ implementation
 
 constructor TPedidosVendaControl.Create;
 begin
-  if FClienteDAO = nil then
-    FClienteDAO := FClienteDAO.Create;
+  if FPedidosVendaDAO = nil then
+    FPedidosVendaDAO := TPedidosVendaDAO.Create;
 
-  if FVendedorDAo = nil then
-    FVendedorDAO := TVendedorDAO.Create;
+  if FProdutoDAO = nil then
+    FProdutoDAO := TProdutoDAO.Create;
 end;
 
 destructor TPedidosVendaControl.Destroy;
 begin
-  if FClienteDAO <> nil then
-    FClienteDAO.Free;
+  if FPedidosVendaDAO <> nil then
+    FPedidosVendaDAO.Free;
 
-  if FVendedorDAo <> nil then
-    FVendedorDAO.Free;
+  if FProdutoDAO <> nil then
+    FProdutoDAO.Free;
 end;
 
-procedure TPedidosVendaControl.GravarPedido;
+function TPedidosVendaControl.
+  GravarPedido(FPedidosVenda: TPedidosVenda):Boolean;
 var
-  lCliente: TCliente;
-  lVendedor: TVendedor;
+  lClienteDAO: TClienteDAO;
+  lVendedorDAO: TVendedorDAO;
+  lListPedidos: TList<TPedidosVenda>;
+  lListCodigosPedidos: TList<Integer>;
+  lListCodigosProdutos: TList<Integer>;
+  lCodigoPedidoNovo: Integer;
+  I: Integer;
 begin
   if FCodigoCliente <= 0 then
   begin
@@ -73,13 +76,44 @@ begin
     Exception.Create('Vendedor nao configuado!');
   end;
 
-  lCliente := FClienteDAO.BuscaPorCodigo(FCodigoCliente);
-  if lCliente = nil then
-    Exception.Create('Cliente invalido!');
+  if FPedidosVenda = nil then
+  begin
+    Exception.Create('Pedido de venda invalido!');
+  end;
 
-  lVendedor := FVendedorDAO.BuscaPorCodigo(FCodigoVendedor);
-  if lVendedor = nil then
-    Exception.Create('Vendedor invalido!');
+  if FListProdutos.Count <= 0 then
+  begin
+    Exception.Create('Produtos nao selecionados!');
+  end;
+
+  lClienteDAO := TClienteDAO.Create;
+  lVendedorDAO := TVendedorDAO.Create;
+  lListPedidos := TList<TPedidosVenda>.Create;
+  try
+    FPedidosVenda.Cliente :=  lClienteDAO.BuscaPorCodigo(FCodigoCliente);
+    FPedidosVenda.Vendedor := lVendedorDAO.BuscaPorCodigo(FCodigoVendedor);
+
+    lListPedidos.Add(FPedidosVenda);
+    lListCodigosPedidos := FPedidosVendaDAO.InsertDados(lListPedidos);
+
+    if (lListCodigosPedidos <> nil) and (lListCodigosPedidos.Count > 0) then
+    begin
+      for I := 0 to FListProdutos.Count - 1 do
+      begin
+        FListProdutos[I].NumeroPedido :=
+          lListCodigosPedidos[lListCodigosPedidos.Count - 1];
+      end;
+    end;
+
+    lListCodigosProdutos := FProdutoDAO.InsertDados(FListProdutos);
+    Result := lListCodigosProdutos.Count > 0;
+  finally
+    lClienteDAO.free;
+    lVendedorDAO.Free;
+    lListPedidos.Free;
+    if lListCodigosPedidos <> nil then
+      lListCodigosPedidos.Free;
+  end;
 end;
 
 {$region 'Sets TPedidosVendaControl'}
@@ -98,11 +132,6 @@ procedure TPedidosVendaControl.SetListProdutos(
   const Value: TList<TProdutoPedido>);
 begin
   FListProdutos := Value;
-end;
-
-procedure TPedidosVendaControl.SetPedidosVenda(const Value: TPedidosVenda);
-begin
-  FPedidosVenda := Value;
 end;
 
 {$endregion}
