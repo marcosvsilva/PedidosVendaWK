@@ -86,13 +86,14 @@ KEY `FK_Pedidos_Vendedores` (`codigo_vendedor`)
 
 CREATE TABLE `Produtos_Pedidos`
 (
- `numero_pedido`  int unsigned NOT NULL,
- `codigo_produto` int unsigned NOT NULL,
- `quantidade`     int NOT NULL,
- `valor_unitario` decimal NOT NULL,
- `valor_total`    decimal NOT NULL,
+ `codigo_produtos_pedidos`  int unsigned NOT NULL AUTO_INCREMENT,
+ `numero_pedido`            int unsigned NOT NULL,
+ `codigo_produto`           int unsigned NOT NULL,
+ `quantidade`               int NOT NULL,
+ `valor_unitario`           decimal NOT NULL,
+ `valor_total`              decimal NOT NULL,
 
-PRIMARY KEY (`numero_pedido`, `codigo_produto`),
+PRIMARY KEY (`codigo_produtos_pedidos`),
 KEY `FK_ProdutosPedidos_Pedidos` (`numero_pedido`),
 KEY `FK_ProdutosPedidos_Produtos` (`codigo_produto`)
 );
