@@ -71,13 +71,13 @@ type
   TCliente = class(TPessoa)
   private
     FCodigoCliente: Integer;
-    FDataUltimaCompra: Double;
+    FDataUltimaCompra: TDateTime;
 
     procedure SetCodigoCliente(const Value: Integer);
-    procedure SetDataUltimaCompra(const Value: Double);
+    procedure SetDataUltimaCompra(const Value: TDateTime);
   public
     property CodigoCliente: Integer read FCodigoCliente write SetCodigoCliente;
-    property DataUltimaCompra: Double
+    property DataUltimaCompra: TDateTime
       read FDataUltimaCompra write SetDataUltimaCompra;
 
     procedure Map(qryDados: TFDQuery); overload;
@@ -228,7 +228,7 @@ begin
   FCodigoCliente := Value;
 end;
 
-procedure TCliente.SetDataUltimaCompra(const Value: Double);
+procedure TCliente.SetDataUltimaCompra(const Value: TDateTime);
 begin
   FDataUltimaCompra := Value;
 end;
