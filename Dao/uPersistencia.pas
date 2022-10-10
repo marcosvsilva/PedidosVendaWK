@@ -8,11 +8,12 @@ uses
 
 type
   IPersistencia<T> = interface
+  ['{1DA8CBC7-6522-4FEE-99C9-58CE6160DE6D}']
     function BuscaPorCodigo(codigo: Integer): T;
     function BuscarDados(nRegistros: Integer;
       filtro, ordem: TStringList): TList<T>;
     function UdateDados(codigo: integer; dados: TStringList): TList<T>;
-    procedure InsertDados(dados: TList<T>);
+    function InsertDados(dados: TList<T>): TList<Integer>;
     procedure DeleteDados(codigos: TStringList);
   end;
 
@@ -28,7 +29,7 @@ type
       filtro, ordem: TStringList): TList<T>; virtual; abstract;
     function UdateDados(codigo: integer; dados: TStringList):
       TList<T>; virtual; abstract;
-    procedure InsertDados(dados: TList<T>); virtual; abstract;
+    function InsertDados(dados: TList<T>): TList<Integer>; virtual; abstract;
     procedure DeleteDados(codigos: TStringList); virtual; abstract;
   end;
 
@@ -38,6 +39,8 @@ implementation
 
 constructor TPersistencia<T>.Create;
 begin
+  inherited;
+
   try
     FConexao := TConexao.Create;
   except

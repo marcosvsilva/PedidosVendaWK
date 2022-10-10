@@ -6,8 +6,8 @@ uses
   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf,
   FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async,
   FireDAC.Phys, Data.DB, FireDAC.Comp.Client, FireDAC.Phys.MySQL,
-  System.SysUtils, FireDAC.DApt, FireDAC.VCLUI.Wait,
-  System.Generics.Collections, System.Classes;
+  System.SysUtils, FireDAC.DApt, FireDAC.VCLUI.Wait, System.IOUtils,
+  System.Generics.Collections, System.Classes, Vcl.Dialogs;
 
 type
   TConexao = class
@@ -21,14 +21,19 @@ type
     destructor Destroy; override;
 
     function ExecuteQuery(sql: TStringList): TFDQuery;
-    function ExecuteCommand(sql: TStringList): Boolean;
+    function InsertData(sql: TStringList): Integer;
   end;
 
 const
-  DB_SERVER = '';
-  DB_USER = '';
-  DB_PASS = '';
-  DB_NAME = '';
+  DB_SERVER = 'mysql-wk.mysql.database.azure.com';
+  DB_USER = 'wk';
+  DB_PASS = 'dernuJ-kisxex-3sedvi';
+  DB_NAME = 'wk';
+  {$IFDEF WIN64}
+    PATH_DRIVER_MYSQL = '\Driver\libmysql64.dll';
+  {$ELSE}
+    PATH_DRIVER_MYSQL = '\Driver\libmysql86.dll';
+  {$ENDIF}
 
 implementation
 
@@ -46,14 +51,19 @@ begin
     FConexao.Params.Add('Password=' + DB_PASS);
     FConexao.Params.Add('CharacterSet=utf8');
 
-    FMySQLDriverLink.VendorLib := '';
+    FMySQLDriverLink.VendorLib :=
+      ExtractFileDir(ExtractFileDir(ExtractFileDir(ParamStr(0)))) +
+      PATH_DRIVER_MYSQL;
   end;
 end;
 
 constructor TConexao.Create;
 begin
-  FConexao := TFDConnection.Create(nil);
-  FMySQLDriverLink := TFDPhysMySQLDriverLink.Create(nil);
+  if FConexao = nil then
+    FConexao := TFDConnection.Create(nil);
+
+  if FMySQLDriverLink = nil then
+    FMySQLDriverLink := TFDPhysMySQLDriverLink.Create(nil);
 
   Self.SetConexao();
 
@@ -73,16 +83,50 @@ begin
   if FConexao <> nil then
     FConexao.Free;
 
+  if FMySQLDriverLink <> nil then
+    FMySQLDriverLink.Free;
+
   inherited;
 end;
 
-function TConexao.ExecuteCommand(sql: TStringList): Boolean;
+function TConexao.InsertData(sql: TStringList): Integer;
 var
-  cmmComando: TFDCommand;
+  qryInsert: TFDQuery;
+  I: Integer;
 begin
+  Result := 0;
+
   if FConexao <> nil then
   begin
-    Result := true;
+    try
+      FConexao.StartTransaction;
+
+      qryInsert := TFDQuery.Create(nil);
+      qryInsert.Connection := Self.FConexao;
+
+      try
+        sql.Add('; SELECT LAST_INSERT_ID() as id;');
+
+        qryInsert.SQL := sql;
+        qryInsert.Open();
+
+        if qryInsert.RecNo > 0 then
+          Result := qryInsert.FieldByName('id').AsInteger;
+
+        if Result > 0 then
+        begin
+          FConexao.Commit;        
+        end;
+      finally
+        qryInsert.Free;
+      end;    
+    except
+      on E: Exception do
+      begin
+        FConexao.Rollback;
+        Exception.Create(E.Message)
+      end;
+    end;
   end;
 end;
 
@@ -93,8 +137,8 @@ begin
   Result := qryBusca;
   if FConexao <> nil then
   begin
-    qryBusca := TFDQuery.Create(nil);
     try
+      qryBusca := TFDQuery.Create(nil);
       qryBusca.Connection := Self.FConexao;
       qryBusca.SQL := sql;
 
