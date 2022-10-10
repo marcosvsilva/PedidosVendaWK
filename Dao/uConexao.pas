@@ -25,10 +25,10 @@ type
   end;
 
 const
-  DB_SERVER = 'mysql-wk.mysql.database.azure.com';
-  DB_USER = 'wk';
-  DB_PASS = 'dernuJ-kisxex-3sedvi';
-  DB_NAME = 'wk';
+  DB_SERVER = '';
+  DB_USER = '';
+  DB_PASS = '';
+  DB_NAME = '';
   {$IFDEF WIN64}
     PATH_DRIVER_MYSQL = '\Driver\libmysql64.dll';
   {$ELSE}
