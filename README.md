@@ -1,4 +1,4 @@
-# PedidosVendaWK
+# WK-orders
 
 ## Descrição
 Projeto de demonstração de habilidades ténicas para processo seletivo da empresa WK Technology;
